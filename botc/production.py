@@ -32,6 +32,11 @@ DATABASES = {
         "HOST": hostname + ".postgres.database.azure.com",
         "USER": os.environ.get("DBUSER"),
         "PASSWORD": os.environ.get("DBPASS"),
+        # Reuse connections rather than opening a new one per request. Total
+        # connections held is roughly gunicorn workers x threads, so keep this
+        # below the Postgres server's max_connections.
+        "CONN_MAX_AGE": int(os.environ.get("DB_CONN_MAX_AGE", 60)),
+        "CONN_HEALTH_CHECKS": True,
     }
 }
 
