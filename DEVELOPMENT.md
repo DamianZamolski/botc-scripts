@@ -43,10 +43,9 @@ In order to test the "Name" and "Author" search fields, you must apply the follo
 from django.contrib.postgres.operations import TrigramExtension
 from django.db import migrations
 
+
 class Migration(migrations.Migration):
-    operations = [
-        TrigramExtension()
-    ]
+    operations = [TrigramExtension()]
 ```
 
 ## Python environment
@@ -86,7 +85,6 @@ INTERNAL_IPS = [
     "127.0.0.1",
     "localhost",
 ]
-
 ```
 
 Be sure to choose your own random string for the `SECRET_KEY`. [You can generate one here](https://randomkeygen.com/). 

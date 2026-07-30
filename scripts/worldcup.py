@@ -1,7 +1,9 @@
-from django.views import generic
-from scripts import models, script_json
-from typing import Dict, Any
 from collections import Counter
+from typing import Any
+
+from django.views import generic
+
+from scripts import models, script_json
 
 
 class WorldCupView(generic.TemplateView):
@@ -12,7 +14,7 @@ class WorldCupView(generic.TemplateView):
             if models.ScriptTag.objects.get(pk=3) in version.tags.all():
                 return version
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         context["round1"] = models.WorldCup.objects.filter(round=1).order_by("pk")
@@ -29,7 +31,7 @@ class WorldCupView(generic.TemplateView):
 class WorldCupStatisticsView(generic.TemplateView):
     template_name = "worldcup/statistics.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         characters_to_display = 5
 

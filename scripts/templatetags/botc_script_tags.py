@@ -1,7 +1,8 @@
+from babel.core import Locale, UnknownLocaleError
 from django import template
 from django.utils.safestring import mark_safe
-from scripts import models, cache, script_json
-from babel.core import Locale, UnknownLocaleError
+
+from scripts import cache, models, script_json
 
 register = template.Library()
 
@@ -33,16 +34,12 @@ def user_favourite(context, script_version):
 @register.simple_tag()
 def script_has_tag(tag, initial):
     tags = initial.get("tags", None)
-    if tags and tag in tags:
-        return True
-    return False
+    return bool(tags and tag in tags)
 
 
 @register.simple_tag()
 def script_in_collection(collection, script_version):
-    if script_version in collection.scripts.all():
-        return True
-    return False
+    return script_version in collection.scripts.all()
 
 
 @register.simple_tag()
@@ -148,9 +145,8 @@ def character_type_change(content, counter):
         if not prev_character or not curr_character:
             return False
 
-        if prev_character and curr_character:
-            if prev_character.character_type != curr_character.character_type:
-                return True
+        if prev_character and curr_character and prev_character.character_type != curr_character.character_type:
+            return True
     return False
 
 

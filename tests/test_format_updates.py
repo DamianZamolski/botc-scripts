@@ -1,8 +1,9 @@
 import pytest
+
 from scripts.script_json import (
+    revert_to_old_format,
     strip_special_characters,
     strip_special_characters_from_json,
-    revert_to_old_format,
 )
 
 

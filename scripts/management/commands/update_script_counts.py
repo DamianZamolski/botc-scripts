@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from scripts.models import ScriptVersion, CharacterType
+
+from scripts.models import CharacterType, ScriptVersion
 from scripts.views import count_character
 
 

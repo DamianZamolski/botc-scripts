@@ -4,7 +4,7 @@ from django.db import models
 class ScriptViewManager(models.Manager):
     def get_queryset(self):
         qs = (
-            super(ScriptViewManager, self)
+            super()
             .get_queryset()
             .annotate(
                 score=models.Count("script__votes", distinct=True),
@@ -16,5 +16,5 @@ class ScriptViewManager(models.Manager):
 
 class CollectionManager(models.Manager):
     def get_queryset(self):
-        qs = super(CollectionManager, self).get_queryset().annotate(scripts_in_collection=models.Count("scripts"))
+        qs = super().get_queryset().annotate(scripts_in_collection=models.Count("scripts"))
         return qs

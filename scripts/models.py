@@ -1,13 +1,12 @@
+from pathlib import Path
+from uuid import uuid4
+
 from django.contrib.auth.models import User
 from django.db import models
 from versionfield import VersionField
 
 from scripts import constants
-from scripts.managers import ScriptViewManager, CollectionManager
-
-from pathlib import Path
-from typing import Dict
-from uuid import uuid4
+from scripts.managers import CollectionManager, ScriptViewManager
 
 
 # Note, if more Editions are added, the Script Upload view
@@ -289,7 +288,7 @@ class BaseCharacter(BaseCharacterInfo):
     other_night_position = models.FloatField(blank=True, null=True)
     modifies_setup = models.BooleanField(default=False)
 
-    def full_character_json(self) -> Dict:
+    def full_character_json(self) -> dict:
         character_json = {}
         character_json["id"] = self.character_id
         character_json["name"] = self.character_name
@@ -364,7 +363,7 @@ class Translation(BaseCharacterInfo):
         ]
         permissions = [("update_translation", "Can update a translation")]
 
-    def full_character_json(self) -> Dict:
+    def full_character_json(self) -> dict:
         character_json = {}
         character_json["id"] = f"{self.language}_{self.character_id}"
         character_json["name"] = self.character_name

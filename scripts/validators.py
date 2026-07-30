@@ -1,6 +1,7 @@
-from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from versionfield.forms import VersionField
+
 from scripts import models
 
 
@@ -8,11 +9,10 @@ def check_for_homebrew(item):
     """
     Homebrew characters are not supported in the custom script database.
     """
-    if item.get("id", "") != "_meta":
-        if len(item) > 1:
-            raise ValidationError(
-                "Only officially supported characters from https://bloodontheclocktower.com/script/ are supported"
-            )
+    if item.get("id", "") != "_meta" and len(item) > 1:
+        raise ValidationError(
+            "Only officially supported characters from https://bloodontheclocktower.com/script/ are supported"
+        )
 
 
 def prevent_fishbucket(json):

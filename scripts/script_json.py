@@ -1,10 +1,11 @@
+import base64 as b64
 import gzip
 import json as js
-import base64 as b64
-from scripts import constants
-from typing import List
-from django.core.files.base import File
 from urllib.parse import quote
+
+from django.core.files.base import File
+
+from scripts import constants
 
 
 def get_author_from_json(json):
@@ -123,15 +124,15 @@ def get_json_changes(old_json, new_json):
             if new_id["id"] == "_meta":
                 continue
 
-            if old_id["id"] == new_id["id"]:
-                if old_id.get("ability", "UNKNOWN_ABILITY") != new_id.get("ability", "UNKNOWN_ABILITY"):
-                    changed_json.append({"id": new_id["id"]})
-                    continue
+            ability_changed = old_id.get("ability", "UNKNOWN_ABILITY") != new_id.get("ability", "UNKNOWN_ABILITY")
+            if old_id["id"] == new_id["id"] and ability_changed:
+                changed_json.append({"id": new_id["id"]})
+                continue
 
     return changed_json
 
 
-def get_similarity(json1: List, json2: List, same_type: bool) -> int:
+def get_similarity(json1: list, json2: list, same_type: bool) -> int:
     similarity = 0
     json1_metadata_count = 0
     json2_metadata_count = 0

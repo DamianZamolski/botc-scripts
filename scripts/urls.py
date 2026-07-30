@@ -1,10 +1,12 @@
-from django.urls import include, path, re_path
-from rest_framework import routers
+from importlib import import_module
+
 from allauth.account.views import login, logout
 from allauth.socialaccount import providers
-from importlib import import_module
-from scripts import api_views, views, viewsets, worldcup
+from django.urls import include, path, re_path
 from django.views.generic.base import TemplateView
+from rest_framework import routers
+
+from scripts import api_views, views, viewsets, worldcup
 
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
