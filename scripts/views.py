@@ -1,20 +1,25 @@
 import json as js
 import os
+from collections import Counter
+from dataclasses import dataclass
 from tempfile import TemporaryFile
+from typing import Any
 
+import requests
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import permission_required
-from django.db.models import Case, When, Count, Prefetch, F
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.contrib.postgres.search import TrigramSimilarity
+from django.db.models import Case, Count, F, Prefetch, When
 from django.http import (
     FileResponse,
-    JsonResponse,
     Http404,
-    HttpResponseRedirect,
-    HttpResponseForbidden,
     HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+    JsonResponse,
 )
 from django.shortcuts import redirect
 from django.utils.text import get_valid_filename
@@ -32,11 +37,6 @@ from scripts import (
     script_json,
     tables,
 )
-from collections import Counter
-from django.contrib.postgres.search import TrigramSimilarity
-from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
-import requests
 
 
 class ScriptsListView(SingleTableMixin, FilterView):
@@ -64,7 +64,7 @@ class ScriptsListView(SingleTableMixin, FilterView):
         return filters.ScriptVersionFilter
 
     def get_filterset_kwargs(self, filterset_class):
-        kwargs = super(ScriptsListView, self).get_filterset_kwargs(filterset_class)
+        kwargs = super().get_filterset_kwargs(filterset_class)
         if kwargs["data"] is None:
             kwargs["data"] = {"latest": True}
         return kwargs
@@ -87,7 +87,7 @@ class UserScriptsListView(LoginRequiredMixin, SingleTableMixin, FilterView):
         return filters.ScriptVersionFilter
 
     def get_queryset(self):
-        queryset = super(UserScriptsListView, self).get_queryset()
+        queryset = super().get_queryset()
         queryset = queryset.prefetch_related("tags")
         if self.script_view == "favourite":
             queryset = queryset.filter(script__favourites__user=self.request.user)
@@ -96,13 +96,13 @@ class UserScriptsListView(LoginRequiredMixin, SingleTableMixin, FilterView):
         return queryset
 
     def get_filterset_kwargs(self, filterset_class):
-        kwargs = super(UserScriptsListView, self).get_filterset_kwargs(filterset_class)
+        kwargs = super().get_filterset_kwargs(filterset_class)
         if kwargs["data"] is None:
             kwargs["data"] = {"latest": True}
         return kwargs
 
 
-def get_comment_data(comment: models.Comment, indent: int) -> List:
+def get_comment_data(comment: models.Comment, indent: int) -> list:
     data = []
     comment_data = {}
     comment_data["comment"] = comment
@@ -113,7 +113,7 @@ def get_comment_data(comment: models.Comment, indent: int) -> List:
     return data
 
 
-def get_comments(script: models.Script) -> Dict:
+def get_comments(script: models.Script) -> dict:
     comments = []
     for comment in script.comments.filter(parent__isnull=True).order_by("created"):
         comments.extend(get_comment_data(comment, 0))
@@ -141,7 +141,7 @@ def count_character(script_content, character_type: models.CharacterType) -> int
     return count
 
 
-def calculate_edition(script_content: Dict) -> int:
+def calculate_edition(script_content: dict) -> int:
     edition = models.Edition.BASE
     clocktower_characters = cache.get_clocktower_characters()
     for json_entry in script_content:
@@ -299,7 +299,7 @@ class AllRolesScriptView(generic.TemplateView):
         return context
 
 
-def download_all_roles_json(request, language: Optional[str] = None) -> FileResponse:
+def download_all_roles_json(request, language: str | None = None) -> FileResponse:
     edition = get_edition_from_request(request)
     content = get_all_roles(edition)
     content = translate_content(content, request, language)
@@ -413,9 +413,8 @@ class ScriptUploadView(BaseScriptUploadView):
 
     def get_form(self):
         form = super().get_form()
-        if self.request.user.is_staff:
-            if form.fields.get("tags"):
-                form.fields.get("tags").queryset = models.ScriptTag.objects.all().order_by("order")
+        if self.request.user.is_staff and form.fields.get("tags"):
+            form.fields.get("tags").queryset = models.ScriptTag.objects.all().order_by("order")
         return form
 
     def get_success_url(self):
@@ -598,7 +597,7 @@ class StatisticsView(generic.ListView, FilterView):
     template_name = "statistics.html"
     filterset_class = filters.StatisticsFilter
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         self.object_list = super().get_queryset()
         context = super().get_context_data(**kwargs)
         stats_character = None
@@ -802,7 +801,7 @@ def favourite_script(request, pk: int) -> None:
     return redirect(request.POST["next"])
 
 
-def translate_character(character_id: str, language: str) -> Dict:
+def translate_character(character_id: str, language: str) -> dict:
     try:
         character = models.ClocktowerCharacter.objects.get(character_id=character_id)
     except models.ClocktowerCharacter.DoesNotExist:
@@ -819,7 +818,7 @@ def translate_character(character_id: str, language: str) -> Dict:
     return return_object
 
 
-def translate_json_content(json_content: List, language: str):
+def translate_json_content(json_content: list, language: str):
     translated_content = []
     for character_id in json_content:
         if character_id.get("id") == "_meta":
@@ -838,7 +837,9 @@ def translate_content(content, request, language):
 
 def json_file_response(name, script_version, content):
     json = js.JSONEncoder(ensure_ascii=False).encode(content)
-    temp_file = TemporaryFile()
+    # Not opened via `with`: FileResponse streams from this file lazily and closes
+    # it itself once the response finishes, so closing it here would break that.
+    temp_file = TemporaryFile()  # noqa: SIM115
     temp_file.write(json.encode("utf-8"))
     temp_file.flush()
     temp_file.seek(0)
@@ -847,7 +848,7 @@ def json_file_response(name, script_version, content):
     return response
 
 
-def download_json(request, pk: int, version: str, language: Optional[str] = None) -> FileResponse:
+def download_json(request, pk: int, version: str, language: str | None = None) -> FileResponse:
     script = models.Script.objects.get(pk=pk)
     script_version = script.versions.get(version=version)
     content = translate_content(script_version.content, request, language)
@@ -961,7 +962,7 @@ class CollectionEditView(LoginRequiredMixin, generic.edit.UpdateView):
         self.object = self.get_object()
         if self.object.owner != self.request.user:
             raise Http404("Cannot edit a collection you don't own.")
-        return super(CollectionEditView, self).get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
 
 class CollectionDeleteView(LoginRequiredMixin, generic.edit.BaseDeleteView):
@@ -1306,7 +1307,7 @@ def character_missing_from_database(character_id, roles):
     return False
 
 
-def create_characters_and_determine_homebrew_status(script_content: Dict, script: models.Script):
+def create_characters_and_determine_homebrew_status(script_content: dict, script: models.Script):
     homebrewiness = models.Homebrewiness.CLOCKTOWER
     non_clocktower_characters = 0
     entries_to_ignore = 0

@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+
 from scripts.models import ScriptVersion
 from scripts.views import create_characters_and_determine_homebrew_status
 

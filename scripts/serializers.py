@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from scripts import models, constants, script_json
+
+from scripts import constants, models, script_json
 
 
 # Serializers define the API representation.

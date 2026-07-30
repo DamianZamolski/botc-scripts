@@ -1,6 +1,6 @@
 import django_tables2 as tables
 
-from scripts.models import ScriptVersion, Collection
+from scripts.models import Collection, ScriptVersion
 
 table_class = {
     "td": {"class": "pl-2 pr-2 p-0 align-middle text-center"},
@@ -82,7 +82,7 @@ class ScriptTable(tables.Table):
     )
 
     def render_name(self, value, record):
-        return "{name} ({version})".format(name=record.script.name, version=record.version)
+        return f"{record.script.name} ({record.version})"
 
 
 class ClocktowerTable(ScriptTable):

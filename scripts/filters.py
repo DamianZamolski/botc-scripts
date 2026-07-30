@@ -1,11 +1,11 @@
 import re
 
 import django_filters
-from django_filters import rest_framework as filters
 from django import forms
 from django.contrib.postgres.search import TrigramSimilarity
+from django_filters import rest_framework as filters
 
-from scripts import models, widgets, script_json
+from scripts import models, script_json, widgets
 
 edition_choices = (
     (models.Edition.BASE, models.Edition.BASE.label),
@@ -109,7 +109,7 @@ class BaseScriptVersionFilter(filters.FilterSet):
     def search_scripts(self, queryset, name, value):
         queryset = annotate_queryset(queryset, "script__name", value)
         try:
-            if "ordering" in self.request.query_params.keys():
+            if "ordering" in self.request.query_params:
                 return queryset.filter(similarity__gt=0.3)
         except AttributeError:
             pass
@@ -119,7 +119,7 @@ class BaseScriptVersionFilter(filters.FilterSet):
     def search_authors(self, queryset, name, value):
         queryset = annotate_queryset(queryset, "author", value)
         try:
-            if "ordering" in self.request.query_params.keys():
+            if "ordering" in self.request.query_params:
                 return queryset.filter(similarity__gt=0.3)
         except AttributeError:
             pass

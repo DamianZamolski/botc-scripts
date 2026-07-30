@@ -1,22 +1,22 @@
 from django.db.models import Count
-from rest_framework import filters, viewsets
+from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.decorators import action, authentication_classes
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.decorators import action, authentication_classes
-from rest_framework import status
-from scripts import models, serializers, script_json
-from scripts import filters as filtersets
-from scripts.views import (
-    translate_json_content,
-    create_characters_and_determine_homebrew_status,
-    count_character,
-    calculate_edition,
-)
-from django_filters.rest_framework import DjangoFilterBackend
-from django.http import Http404
 from versionfield import Version
+
+from scripts import filters as filtersets
+from scripts import models, script_json, serializers
+from scripts.views import (
+    calculate_edition,
+    count_character,
+    create_characters_and_determine_homebrew_status,
+    translate_json_content,
+)
 
 
 class ScriptApiPermissions(BasePermission):
@@ -26,9 +26,7 @@ class ScriptApiPermissions(BasePermission):
     """
 
     def has_permission(self, request, view):
-        if request.user and request.user.has_perm("scripts.api_write_permission"):
-            return True
-        return False
+        return bool(request.user and request.user.has_perm("scripts.api_write_permission"))
 
 
 class ScriptViewSet(viewsets.ModelViewSet):
@@ -60,7 +58,7 @@ class ScriptViewSet(viewsets.ModelViewSet):
     @authentication_classes([BasicAuthentication])
     def create(self, request, *args, **kwargs):
         kwargs.setdefault("context", self.get_serializer_context())
-        serializer = serializers.ScriptUploadSerializer(data=request.data, *args, **kwargs)
+        serializer = serializers.ScriptUploadSerializer(*args, data=request.data, **kwargs)
         if not serializer.is_valid(raise_exception=True):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         if not serializer.is_createable(raise_exception=True):
@@ -157,7 +155,7 @@ class ScriptViewSet(viewsets.ModelViewSet):
             instance = models.ScriptVersion.objects.get(pk=pk)
         except models.ScriptVersion.DoesNotExist:
             return Response({"error": "Script version not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = serializers.ScriptUploadSerializer(data=request.data, *args, **kwargs)
+        serializer = serializers.ScriptUploadSerializer(*args, data=request.data, **kwargs)
         if not serializer.is_valid(create=False, raise_exception=True):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         if not serializer.is_expected_script(instance, raise_exception=True):

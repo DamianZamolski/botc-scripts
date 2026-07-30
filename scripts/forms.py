@@ -1,14 +1,15 @@
+import json as js
+import os
+
+import jsonschema
+import jsonschema.exceptions
+import requests
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
-import jsonschema.exceptions
 from versionfield import Version
 
-from scripts import constants, models, validators, widgets, script_json
-import json as js
-import requests
-import os
-import jsonschema
+from scripts import constants, models, script_json, validators, widgets
 
 
 def tagOptions():
@@ -42,7 +43,7 @@ class ScriptForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
-        super(ScriptForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -86,15 +87,11 @@ class ScriptForm(forms.Form):
         json_name = script_json.get_name_from_json(json)
         if not entered_name:
             raise ValidationError("No script name provided. A name must be entered.")
-        if json_name and entered_name:
-            if json_name != entered_name:
-                raise ValidationError(f"Entered Name {entered_name} does not match script JSON name {json_name}")
+        if json_name and entered_name and json_name != entered_name:
+            raise ValidationError(f"Entered Name {entered_name} does not match script JSON name {json_name}")
 
-        if entered_author and json_author:
-            if entered_author != json_author:
-                raise ValidationError(
-                    f"Entered Author {entered_author} does not match script JSON author {json_author}."
-                )
+        if entered_author and json_author and entered_author != json_author:
+            raise ValidationError(f"Entered Author {entered_author} does not match script JSON author {json_author}.")
 
         script_name = entered_name
 
@@ -106,11 +103,10 @@ class ScriptForm(forms.Form):
 
             new_version = cleaned_data["version"]
             for script_version in script.versions.all():
-                if Version(new_version) == script_version.version:
-                    if script_version.content != json:
-                        raise ValidationError(
-                            f"Version {new_version} already exists. You cannot upload a different script with the same version number."
-                        )
+                if Version(new_version) == script_version.version and script_version.content != json:
+                    raise ValidationError(
+                        f"Version {new_version} already exists. You cannot upload a different script with the same version number."
+                    )
 
             validators.validate_homebrew_character(json, script)
 
@@ -206,7 +202,7 @@ class AdvancedSearchForm(forms.Form):
         *args,
         **kwargs,
     ):
-        super(AdvancedSearchForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["number_of_townsfolk"].choices = townsfolk_choices
         self.fields["number_of_outsiders"].choices = outsider_choices
         self.fields["number_of_minions"].choices = minion_choices

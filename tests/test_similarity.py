@@ -1,6 +1,8 @@
 import json as js
 import os
+
 import pytest
+
 from scripts.script_json import get_similarity
 
 current_dir = os.path.dirname(os.path.realpath(__file__))

@@ -1,6 +1,8 @@
 import json as js
 import os
+
 import pytest
+
 from scripts.script_json import get_json_changes
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
