@@ -91,9 +91,7 @@ class ScriptForm(forms.Form):
             raise ValidationError(f"Entered Name {entered_name} does not match script JSON name {json_name}")
 
         if entered_author and json_author and entered_author != json_author:
-            raise ValidationError(
-                f"Entered Author {entered_author} does not match script JSON author {json_author}."
-            )
+            raise ValidationError(f"Entered Author {entered_author} does not match script JSON author {json_author}.")
 
         script_name = entered_name
 
