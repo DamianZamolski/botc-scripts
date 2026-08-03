@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action, authentication_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -29,13 +30,40 @@ class ScriptApiPermissions(BasePermission):
         return bool(request.user and request.user.has_perm("scripts.api_write_permission"))
 
 
-class ScriptViewSet(viewsets.ModelViewSet):
-    queryset = models.ScriptVersion.objects.all()
+class CollectionPagination(PageNumberPagination):
+    page_size = 25
+
+
+class ScriptPagination(PageNumberPagination):
+    page_size = 50
+
+
+class CollectionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Collection.objects.all()
+    serializer_class = serializers.CollectionSerializer
+    pagination_class = CollectionPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["pk"]
+    ordering = ["-pk"]
+
+
+class ScriptViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Script.objects.all()
     serializer_class = serializers.ScriptSerializer
+    pagination_class = ScriptPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ["pk"]
+    ordering = ["-pk"]
+
+
+class VersionViewSet(viewsets.ModelViewSet):
+    queryset = models.ScriptVersion.objects.all()
+    serializer_class = serializers.VersionSerializer
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     filterset_class = filtersets.ScriptVersionFilter
     ordering_fields = ["pk", "score"]
     ordering = ["-pk"]
+    pagination_class = ScriptPagination
 
     def get_queryset(self):
         queryset = models.ScriptVersion.plain_objects.annotate(score=Count("script__votes", distinct=True))
@@ -216,7 +244,7 @@ class ScriptViewSet(viewsets.ModelViewSet):
 
 class TranslateScriptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.ScriptVersion.objects.all()
-    serializer_class = serializers.ScriptSerializer
+    serializer_class = serializers.VersionSerializer
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     filterset_class = filtersets.ScriptVersionFilter
     ordering_fields = ["pk", "score"]

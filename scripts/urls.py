@@ -5,12 +5,34 @@ from allauth.socialaccount import providers
 from django.urls import include, path, re_path
 from django.views.generic.base import TemplateView
 from rest_framework import routers
+from rest_framework.reverse import reverse
 
 from scripts import api_views, views, viewsets, worldcup
 
+
+class APIRootView(routers.APIRootView):
+    """Extends the default DRF root view to also list non-viewset API endpoints."""
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        response.data.update(
+            {
+                "characters": reverse("characters-api", request=request, format=kwargs.get("format")),
+                "statistics": reverse("statistics-api", request=request, format=kwargs.get("format")),
+            }
+        )
+        return response
+
+
+class APIRouter(routers.DefaultRouter):
+    APIRootView = APIRootView
+
+
 # Routers provide an easy way of automatically determining the URL conf.
-router = routers.DefaultRouter()
-router.register(r"scripts", viewsets.ScriptViewSet)
+router = APIRouter()
+router.register(r"scripts", viewsets.VersionViewSet)
+router.register(r"script_ids", viewsets.ScriptViewSet)
+router.register(r"collections", viewsets.CollectionViewSet)
 
 translation_detail = viewsets.TranslationViewSet.as_view({"get": "retrieve", "put": "update", "post": "create"})
 translate = viewsets.TranslateScriptViewSet.as_view({"get": "retrieve"})
@@ -19,8 +41,8 @@ translate = viewsets.TranslateScriptViewSet.as_view({"get": "retrieve"})
 urlpatterns = [
     path("", views.ScriptsListView.as_view()),
     path("api/", include(router.urls)),
-    path("api/characters", api_views.CharactersAPI.as_view()),
-    path("api/statistics", api_views.StatisticsAPI.as_view()),
+    path("api/characters", api_views.CharactersAPI.as_view(), name="characters-api"),
+    path("api/statistics", api_views.StatisticsAPI.as_view(), name="statistics-api"),
     path("api/translations/<str:language>/<str:character_id>/", translation_detail),
     path("api/translate/<int:script_version>/<str:language>", translate),
     path("collections", views.CollectionListView.as_view()),

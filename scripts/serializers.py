@@ -1,10 +1,47 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from scripts import constants, models, script_json
 
 
-# Serializers define the API representation.
+class CollectionSerializer(serializers.ModelSerializer):
+    scripts = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Collection
+        fields = ["pk", "name", "scripts"]
+
+    def get_scripts(self, obj):
+        request = self.context.get("request")
+        return [
+            reverse("scriptversion-detail", kwargs={"pk": script.pk}, request=request) for script in obj.scripts.all()
+        ]
+
+
 class ScriptSerializer(serializers.ModelSerializer):
+    versions = serializers.SerializerMethodField()
+    latest_version = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Script
+        fields = ["pk", "name", "versions", "latest_version"]
+
+    def get_versions(self, obj):
+        request = self.context.get("request")
+        return {
+            str(version.version): reverse("scriptversion-detail", kwargs={"pk": version.pk}, request=request)
+            for version in obj.versions.all()
+        }
+
+    def get_latest_version(self, obj):
+        request = self.context.get("request")
+        latest = obj.latest_version()
+        if not latest:
+            return None
+        return {str(latest.version): reverse("scriptversion-detail", kwargs={"pk": latest.pk}, request=request)}
+
+
+class VersionSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="script.name")
     script_id = serializers.IntegerField(source="script.pk", read_only=True)
     score = serializers.IntegerField(read_only=True)
