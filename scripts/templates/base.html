@@ -7,8 +7,66 @@
 
 <!doctype html>
 <html class="h-100">
+<script>
+    // Set data-theme before first paint to avoid a flash of the wrong theme.
+    (function () {
+        var theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+    })();
+</script>
 
 <style>
+:root {
+    --bg-color: #ffffff;
+    --text-color: #212529;
+    --card-bg: #ffffff;
+    --border-color: #dee2e6;
+    --link-color: #007bff;
+    --muted-color: #6c757d;
+}
+html[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --border-color: #444444;
+    --link-color: #8ab4f8;
+    --muted-color: #aaaaaa;
+}
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+html[data-theme="dark"] a {
+    color: var(--link-color);
+}
+html[data-theme="dark"] .text-dark {
+    color: var(--text-color) !important;
+}
+html[data-theme="dark"] .text-muted {
+    color: var(--muted-color) !important;
+}
+html[data-theme="dark"] .table {
+    color: var(--text-color);
+}
+html[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .custom-select,
+html[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+html[data-theme="dark"] .dropdown-item {
+    color: var(--text-color);
+}
+html[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="dark"] .dropdown-item:focus {
+    background-color: #333333;
+    color: #ffffff;
+}
 .badge-purple {
    color: #ffffff;
    background-color: #694c8f;
@@ -36,6 +94,13 @@
 
 <body class="d-flex flex-column h-100">
     {% include 'navbar.html' %}
+
+    <script>
+        // Keep the theme in sync if the OS preference changes while the page is open.
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (event) {
+            document.documentElement.setAttribute('data-theme', event.matches ? 'dark' : 'light');
+        });
+    </script>
 
     {% if BANNER %}
         <div class="alert alert-danger">
