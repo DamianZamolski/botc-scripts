@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n bootstrap_icons %}
 
 <nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-dark">
     <a class="navbar-brand">BotC Scripts</a>
@@ -50,6 +50,12 @@
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item align-self-center mr-2">
+                <button id="themeToggle" class="btn btn-outline-light btn-sm px-2 py-1" type="button" aria-label="Toggle theme" title="Toggle theme">
+                    <span id="themeToggleMoon" aria-hidden="true">{% bs_icon 'moon-stars-fill' %}</span>
+                    <span id="themeToggleSun" class="d-none" aria-hidden="true">{% bs_icon 'sun-fill' %}</span>
+                </button>
+            </li>
             {% if not user.is_authenticated %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'account_login' %}">Log In/Sign Up</a>
