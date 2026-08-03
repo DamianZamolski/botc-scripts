@@ -1116,7 +1116,7 @@ class AdvancedSearchResultsView(SingleTableView):
                 order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids)])
                 queryset = models.ScriptVersion.objects.filter(pk__in=ids).prefetch_related("tags").order_by(order)
                 return queryset
-        return models.ScriptVersion.objects.none()
+        return models.ScriptVersion.objects.prefetch_related("tags").all()
 
     def get_table_class(self):
         if self.request.user.is_authenticated:
