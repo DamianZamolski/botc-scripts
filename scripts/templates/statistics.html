@@ -47,6 +47,18 @@
     .table-striped-loric>tbody>tr:nth-child(even)>td {
         background-color: rgba(189, 205, 81, 0.4);
     }
+
+    /* These tables keep fixed pastel backgrounds, so text should stay black regardless of theme. */
+    html[data-theme="dark"] .table-striped-good td,
+    html[data-theme="dark"] .table-striped-evil td,
+    html[data-theme="dark"] .table-striped-traveller td,
+    html[data-theme="dark"] .table-striped-fabled td,
+    html[data-theme="dark"] .table-striped-good .text-dark,
+    html[data-theme="dark"] .table-striped-evil .text-dark,
+    html[data-theme="dark"] .table-striped-traveller .text-dark,
+    html[data-theme="dark"] .table-striped-fabled .text-dark {
+        color: #212529 !important;
+    }
 </style>
 
 <div class="container">
