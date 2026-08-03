@@ -38,7 +38,7 @@ class ScriptSerializer(serializers.ModelSerializer):
         latest = obj.latest_version()
         if not latest:
             return None
-        return {str(latest.version): reverse("scriptversion-detail", kwargs={"pk": latest.pk}, request=request)}
+        return reverse("scriptversion-detail", kwargs={"pk": latest.pk}, request=request)
 
 
 class VersionSerializer(serializers.ModelSerializer):
