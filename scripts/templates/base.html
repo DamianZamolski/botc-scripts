@@ -10,7 +10,8 @@
 <script>
     // Set data-theme before first paint to avoid a flash of the wrong theme.
     (function () {
-        var theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        var storedTheme = localStorage.getItem('theme');
+        var theme = storedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
     })();
 </script>
@@ -118,10 +119,44 @@ html[data-theme="dark"] .page-item.active .page-link {
     {% include 'navbar.html' %}
 
     <script>
-        // Keep the theme in sync if the OS preference changes while the page is open.
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (event) {
-            document.documentElement.setAttribute('data-theme', event.matches ? 'dark' : 'light');
-        });
+        function setTheme(theme, persist) {
+            document.documentElement.setAttribute('data-theme', theme);
+            if (persist) {
+                localStorage.setItem('theme', theme);
+            }
+            var toggle = document.getElementById('themeToggle');
+            var moonIcon = document.getElementById('themeToggleMoon');
+            var sunIcon = document.getElementById('themeToggleSun');
+            if (toggle) {
+                var nextThemeLabel = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+                toggle.setAttribute('aria-label', nextThemeLabel);
+                toggle.setAttribute('title', nextThemeLabel);
+            }
+            if (moonIcon && sunIcon) {
+                moonIcon.classList.toggle('d-none', theme === 'dark');
+                sunIcon.classList.toggle('d-none', theme !== 'dark');
+            }
+        }
+
+        (function () {
+            var toggle = document.getElementById('themeToggle');
+            var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            setTheme(currentTheme, false);
+
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    var activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                    setTheme(activeTheme === 'dark' ? 'light' : 'dark', true);
+                });
+            }
+
+            // Follow OS changes only when the user has not manually chosen a theme.
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (event) {
+                if (!localStorage.getItem('theme')) {
+                    setTheme(event.matches ? 'dark' : 'light', false);
+                }
+            });
+        })();
     </script>
 
     {% if BANNER %}
