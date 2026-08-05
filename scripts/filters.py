@@ -46,7 +46,7 @@ def exclude_characters(queryset, value):
 
 
 def name_to_id(name: str):
-    return name.replace(" ", "_").replace("'", "").lower()
+    return name.replace(" ", "").replace("'", "").lower()
 
 
 class BaseScriptVersionFilter(filters.FilterSet):
